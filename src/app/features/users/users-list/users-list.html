@@ -1,0 +1,58 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold">Usuarios</h1>
+
+  <button class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition">
+    + Nuevo usuario
+  </button>
+</div>
+
+<!-- Loading -->
+<div *ngIf="loading()" class="text-gray-500">
+  Cargando usuarios…
+</div>
+
+<!-- Empty -->
+<div *ngIf="!loading() && users().length === 0" class="text-gray-500">
+  No hay usuarios registrados.
+</div>
+
+<!-- Table -->
+<div *ngIf="!loading() && users().length > 0" class="bg-white rounded shadow overflow-hidden">
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-100 text-left">
+      <tr>
+        <th class="px-4 py-3 font-medium">Email</th>
+        <th class="px-4 py-3 font-medium">Roles</th>
+        <th class="px-4 py-3 font-medium text-right">Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let user of users()" class="border-t hover:bg-gray-50 transition">
+        <td class="px-4 py-3">
+          {{ user.email }}
+        </td>
+
+        <td class="px-4 py-3">
+          <span *ngFor="let role of user.roles" class="inline-block mr-2 px-2 py-1 text-xs rounded bg-gray-200">
+            {{ role }}
+          </span>
+        </td>
+
+        <td class="px-4 py-3 text-right space-x-2">
+          <button class="text-blue-600 hover:underline">
+            Ver
+          </button>
+
+          <button class="text-yellow-600 hover:underline">
+            Editar
+          </button>
+
+          <button class="text-red-600 hover:underline">
+            Eliminar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

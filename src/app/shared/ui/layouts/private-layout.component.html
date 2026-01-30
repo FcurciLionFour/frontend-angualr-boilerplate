@@ -1,0 +1,15 @@
+<aside class="w-64 bg-slate-900 text-white p-4 space-y-2">
+  <div class="font-bold mb-4">App</div>
+
+  <a
+    *ngFor="let item of visibleMenu()"
+    [routerLink]="item.route"
+    class="block px-3 py-2 rounded hover:bg-slate-700"
+  >
+    {{ item.label }}
+  </a>
+</aside>
+
+<main class="flex-1 p-6 bg-slate-50">
+  <router-outlet></router-outlet>
+</main>
