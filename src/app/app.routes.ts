@@ -38,7 +38,15 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'forbidden',
+    loadComponent: () =>
+      import('./shared/pages/forbidden/forbidden')
+        .then(m => m.Forbidden),
+  },
+  {
     path: '**',
-    redirectTo: 'dashboard',
+    loadComponent: () =>
+      import('./shared/pages/not-found/not-found.component')
+        .then(m => m.NotFoundComponent),
   },
 ];

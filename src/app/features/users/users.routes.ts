@@ -11,10 +11,26 @@ export const usersRoutes: Routes = [
         .then(m => m.UsersList),
   },
   {
+    path: 'new',
+    canActivate: [permissionGuard(['users.write'])],
+    loadComponent: () =>
+      import('./create-user/user-create.component')
+        .then(m => m.UserCreateComponent),
+  },
+  {
+    path: ':id/edit',
+    canActivate: [permissionGuard(['users.write'])],
+    loadComponent: () =>
+      import('./user-edit/user-edit.component')
+        .then(m => m.UserEditComponent),
+  },
+  {
     path: ':id',
     canActivate: [selfOrAdminGuard],
     loadComponent: () =>
       import('./user-detail/user-detail')
         .then(m => m.UserDetail),
   },
+
+
 ];

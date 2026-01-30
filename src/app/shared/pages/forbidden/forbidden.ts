@@ -1,8 +1,10 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-forbidden',
-  imports: [],
+  imports: [CommonModule, RouterLink],
   templateUrl: './forbidden.html',
   styleUrl: './forbidden.css',
 })

@@ -40,4 +40,26 @@ export class AuthApi {
       { withCredentials: this.config.withCredentials }
     );
   }
+  forgotPassword(email: string) {
+    return this.http.post(
+      `${this.config.baseUrl}/auth/forgot-password`,
+      { email }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string) {
+    return this.http.post(
+      `${this.config.baseUrl}/auth/reset-password`,
+      { token, newPassword }
+    );
+  }
+  changePassword(payload: { currentPassword: string; newPassword: string }) {
+    return this.http.post(
+      `${this.config.baseUrl}/auth/change-password`,
+      payload,
+      { withCredentials: true }
+    );
+  }
+
+
 }

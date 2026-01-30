@@ -7,6 +7,7 @@ export interface UserDto {
   email: string;
   roles: string[];
   permissions: string[];
+  isActive: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -28,5 +29,32 @@ export class UsersApi {
       { withCredentials: this.config.withCredentials }
     );
   }
+  create(payload: {
+    email: string;
+    password: string;
+    roles: string[];
+  }) {
+    return this.http.post<UserDto>(
+      `${this.config.baseUrl}/users`,
+      payload,
+      { withCredentials: this.config.withCredentials }
+    );
+  }
+  update(
+    id: string,
+    payload: {
+      email?: string;
+      isActive?: boolean;
+      roles?: string[];
+    }
+  ) {
+    return this.http.patch<UserDto>(
+      `${this.config.baseUrl}/users/${id}`,
+      payload,
+      { withCredentials: this.config.withCredentials }
+    );
+  }
+
+
 
 }

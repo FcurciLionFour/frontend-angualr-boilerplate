@@ -1,1 +1,11 @@
-<router-outlet></router-outlet>
+<ng-container *ngIf="!authStore.initializing(); else loading">
+    <router-outlet />
+</ng-container>
+
+<ng-template #loading>
+    <div class="min-h-screen flex items-center justify-center bg-slate-50">
+        <div class="text-slate-600 text-sm">Cargando aplicación…</div>
+    </div>
+</ng-template>
+
+<app-toast />
