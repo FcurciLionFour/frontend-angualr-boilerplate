@@ -6,17 +6,13 @@ export const authGuard: CanActivateFn = () => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
 
-  // Mientras inicializa la app, NO bloqueamos
   if (authStore.initializing()) {
     return true;
   }
 
-  // Si hay accessToken, dejamos pasar
-  if (authStore.accessToken()) {
+  if (authStore.isAuthenticated()) {
     return true;
   }
 
-  // Caso no autenticado
-  router.navigate(['/auth/login']);
-  return false;
+  return router.parseUrl('/auth/login');
 };

@@ -1,13 +1,23 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 const CSRF_COOKIE = 'csrf_token';
-const CSRF_HEADER = 'X-CSRF-Token';
+const CSRF_HEADER = 'x-csrf-token';
 
 function getCookie(name: string): string | null {
-  return document.cookie
+  const rawValue = document.cookie
     .split('; ')
     .find(row => row.startsWith(name + '='))
-    ?.split('=')[1] ?? null;
+    ?.split('=')[1];
+
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    return decodeURIComponent(rawValue);
+  } catch {
+    return rawValue;
+  }
 }
 
 export const csrfInterceptor: HttpInterceptorFn = (req, next) => {

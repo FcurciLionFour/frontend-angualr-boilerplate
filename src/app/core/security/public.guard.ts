@@ -6,15 +6,12 @@ export const publicGuard: CanMatchFn = () => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
 
-  // mientras inicializa, no bloqueamos
   if (authStore.initializing()) {
     return true;
   }
 
-  // si ya está logueado → fuera del login
-  if (authStore.accessToken()) {
-    router.navigate(['/dashboard']);
-    return false;
+  if (authStore.isAuthenticated()) {
+    return router.parseUrl('/dashboard');
   }
 
   return true;
