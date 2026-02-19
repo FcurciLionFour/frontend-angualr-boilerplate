@@ -17,6 +17,7 @@ describe('SessionService', () => {
   beforeEach(() => {
     authApiSpy = jasmine.createSpyObj<AuthApi>('AuthApi', [
       'login',
+      'register',
       'logout',
       'refresh',
       'me',
@@ -60,6 +61,27 @@ describe('SessionService', () => {
 
     expect(csrfApiSpy.init).toHaveBeenCalledTimes(1);
     expect(authApiSpy.login).toHaveBeenCalledTimes(1);
+    expect(authStoreSpy.setAccessToken).toHaveBeenCalledWith('access-token');
+    expect(authApiSpy.me).toHaveBeenCalledTimes(1);
+    expect(authStoreSpy.setSession).toHaveBeenCalled();
+    expect(authStoreSpy.finishInit).toHaveBeenCalledTimes(1);
+  });
+
+  it('runs register flow: csrf -> register -> me', () => {
+    csrfApiSpy.init.and.returnValue(of({}));
+    authApiSpy.register.and.returnValue(of({ accessToken: 'access-token' }));
+    authApiSpy.me.and.returnValue(
+      of({
+        user: { id: 'u1', email: 'user@test.com' },
+        roles: ['USER'],
+        permissions: [],
+      })
+    );
+
+    service.register('user@test.com', 'pass').subscribe();
+
+    expect(csrfApiSpy.init).toHaveBeenCalledTimes(1);
+    expect(authApiSpy.register).toHaveBeenCalledTimes(1);
     expect(authStoreSpy.setAccessToken).toHaveBeenCalledWith('access-token');
     expect(authApiSpy.me).toHaveBeenCalledTimes(1);
     expect(authStoreSpy.setSession).toHaveBeenCalled();

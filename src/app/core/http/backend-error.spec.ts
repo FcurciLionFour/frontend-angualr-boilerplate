@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { normalizeBackendError } from './backend-error';
 
 describe('normalizeBackendError', () => {
@@ -44,5 +44,22 @@ describe('normalizeBackendError', () => {
     const normalized = normalizeBackendError(error);
 
     expect(normalized.code).toBe('INTERNAL_SERVER_ERROR');
+  });
+
+  it('reads retryAfterSeconds from Retry-After header when body does not include it', () => {
+    const error = new HttpErrorResponse({
+      status: 429,
+      error: {
+        code: 'RATE_LIMIT_EXCEEDED',
+        message: 'Too many requests',
+      },
+      headers: new HttpHeaders({
+        'Retry-After': '7',
+      }),
+    });
+
+    const normalized = normalizeBackendError(error);
+
+    expect(normalized.retryAfterSeconds).toBe(7);
   });
 });

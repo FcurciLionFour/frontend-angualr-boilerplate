@@ -18,6 +18,14 @@ export class AuthApi {
     );
   }
 
+  register(email: string, password: string) {
+    return this.http.post<AuthTokensResponse>(
+      `${this.config.baseUrl}/auth/register`,
+      { email, password },
+      { withCredentials: this.config.withCredentials }
+    );
+  }
+
   refresh() {
     return this.http.post<AuthTokensResponse>(
       `${this.config.baseUrl}/auth/refresh`,

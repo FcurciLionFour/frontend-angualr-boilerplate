@@ -14,6 +14,7 @@ import { of, throwError } from 'rxjs';
 import { AuthStore } from '../auth/auth.store';
 import { SessionService } from '../auth/session.service';
 import { refreshInterceptor } from './refresh.interceptor';
+import { API_CONFIG } from '../config/api.config';
 
 describe('refreshInterceptor', () => {
   let http: HttpClient;
@@ -32,6 +33,13 @@ describe('refreshInterceptor', () => {
         provideHttpClient(withInterceptors([refreshInterceptor])),
         provideHttpClientTesting(),
         { provide: SessionService, useValue: sessionServiceSpy },
+        {
+          provide: API_CONFIG,
+          useValue: {
+            baseUrl: 'http://localhost:3000',
+            withCredentials: true,
+          },
+        },
         {
           provide: AuthStore,
           useValue: {
@@ -102,6 +110,22 @@ describe('refreshInterceptor', () => {
     });
 
     const request = httpMock.expectOne('/auth/login');
+    request.flush({}, { status: 401, statusText: 'Unauthorized' });
+
+    expect(sessionServiceSpy.refreshAccessToken).not.toHaveBeenCalled();
+    expect(receivedError instanceof HttpErrorResponse).toBeTrue();
+  });
+
+  it('does not refresh for auth register endpoint', () => {
+    let receivedError: HttpErrorResponse | undefined;
+
+    http.post('/auth/register', {}).subscribe({
+      error: (error) => {
+        receivedError = error;
+      },
+    });
+
+    const request = httpMock.expectOne('/auth/register');
     request.flush({}, { status: 401, statusText: 'Unauthorized' });
 
     expect(sessionServiceSpy.refreshAccessToken).not.toHaveBeenCalled();

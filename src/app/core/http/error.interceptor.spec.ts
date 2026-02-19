@@ -68,4 +68,42 @@ describe('errorInterceptor', () => {
     expect(loggerSpy.warn).toHaveBeenCalled();
     expect(receivedError instanceof HttpErrorResponse).toBeTrue();
   });
+
+  it('shows permission toast only for permission-related 403 codes', () => {
+    http.get('/users').subscribe({
+      error: () => undefined,
+    });
+
+    const request = httpMock.expectOne('/users');
+    request.flush(
+      {
+        code: 'ACCESS_DENIED',
+        message: 'Forbidden',
+      },
+      { status: 403, statusText: 'Forbidden' }
+    );
+
+    expect(toastSpy.error).toHaveBeenCalledWith(
+      'No tenes permisos para realizar esta accion.'
+    );
+  });
+
+  it('shows csrf toast for csrf-related 403 codes', () => {
+    http.post('/auth/logout', {}).subscribe({
+      error: () => undefined,
+    });
+
+    const request = httpMock.expectOne('/auth/logout');
+    request.flush(
+      {
+        code: 'AUTH_CSRF_TOKEN_INVALID',
+        message: 'CSRF token invalid',
+      },
+      { status: 403, statusText: 'Forbidden' }
+    );
+
+    expect(toastSpy.error).toHaveBeenCalledWith(
+      'Sesion de seguridad invalida. Refresca la pagina e intenta nuevamente.'
+    );
+  });
 });

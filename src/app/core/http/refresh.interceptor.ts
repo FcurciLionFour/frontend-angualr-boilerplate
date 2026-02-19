@@ -7,12 +7,23 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { SessionService } from '../auth/session.service';
 import { AuthStore } from '../auth/auth.store';
+import { API_CONFIG } from '../config/api.config';
 
 const REFRESH_ATTEMPTED = new HttpContextToken<boolean>(() => false);
+
+function isBackendRequest(url: string, baseUrl: string): boolean {
+  const isAbsolute = /^https?:\/\//i.test(url);
+  if (isAbsolute) {
+    return url.startsWith(baseUrl);
+  }
+
+  return url.startsWith('/');
+}
 
 function shouldSkipRefresh(url: string): boolean {
   return (
     url.includes('/auth/login') ||
+    url.includes('/auth/register') ||
     url.includes('/auth/refresh') ||
     url.includes('/auth/csrf') ||
     url.includes('/auth/forgot-password') ||
@@ -26,8 +37,12 @@ function shouldSkipRefresh(url: string): boolean {
 export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
   const sessionService = inject(SessionService);
   const authStore = inject(AuthStore);
+  const config = inject(API_CONFIG);
 
-  if (shouldSkipRefresh(req.url)) {
+  if (
+    !isBackendRequest(req.url, config.baseUrl) ||
+    shouldSkipRefresh(req.url)
+  ) {
     return next(req);
   }
 

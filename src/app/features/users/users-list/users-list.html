@@ -6,7 +6,7 @@
     </p>
   </div>
 
-  <a routerLink="/users/new"
+  <a *ngIf="canCreate()" routerLink="/users/new"
     class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700">
     + Nuevo usuario
   </a>
@@ -35,7 +35,7 @@
     </thead>
 
     <tbody>
-      <tr *ngFor="let user of users()" class="border-t hover:bg-gray-50 transition" [class.opacity-50]="user.isActive!">
+      <tr *ngFor="let user of users()" class="border-t hover:bg-gray-50 transition" [class.opacity-50]="isUserInactive(user)">
 
         <td class="px-4 py-3">
           {{ user.email }}

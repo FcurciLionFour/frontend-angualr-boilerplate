@@ -7,7 +7,8 @@
     "lint": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.spec.json --noEmit",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "smoke:auth": "powershell -ExecutionPolicy Bypass -File .\\scripts\\smoke-auth-contract.ps1"
   },
   "prettier": {
     "overrides": [

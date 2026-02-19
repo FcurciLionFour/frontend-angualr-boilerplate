@@ -18,6 +18,12 @@ export const usersRoutes: Routes = [
         .then(m => m.UserCreateComponent),
   },
   {
+    path: 'change-password',
+    loadComponent: () =>
+      import('./change-password/change-password.component')
+        .then(m => m.ChangePasswordComponent),
+  },
+  {
     path: ':id/edit',
     canActivate: [permissionGuard(['users.write'])],
     loadComponent: () =>

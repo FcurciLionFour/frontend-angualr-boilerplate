@@ -3,6 +3,18 @@ import { publicGuard } from '../../core/security/public.guard';
 
 export const authRoutes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'login',
+  },
+  {
+    path: 'register',
+    canMatch: [publicGuard],
+    loadComponent: () =>
+      import('./register/register.component')
+        .then(m => m.RegisterComponent),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./login/login')

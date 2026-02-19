@@ -47,6 +47,15 @@ export class SessionService {
     );
   }
 
+  register(email: string, password: string) {
+    return this.csrfApi.init().pipe(
+      switchMap(() => this.authApi.register(email, password)),
+      tap(({ accessToken }) => this.authStore.setAccessToken(accessToken)),
+      switchMap(() => this.hydrateIdentity()),
+      tap(() => this.authStore.finishInit())
+    );
+  }
+
   logout() {
     return this.csrfApi.init().pipe(
       switchMap(() => this.authApi.logout()),

@@ -6,6 +6,14 @@ import { publicGuard } from './core/security/public.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    canMatch: [publicGuard],
+    loadComponent: () =>
+      import('./shared/pages/public-home/public-home.component')
+        .then(m => m.PublicHomeComponent),
+  },
+  {
     path: 'auth',
     component: PublicLayoutComponent,
     canMatch: [publicGuard],

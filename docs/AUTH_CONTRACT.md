@@ -5,6 +5,7 @@ Este documento define el contrato de integracion que el frontend debe respetar c
 ## Endpoints de auth
 
 - `GET /auth/csrf`
+- `POST /auth/register`
 - `POST /auth/login`
 - `POST /auth/refresh`
 - `POST /auth/logout`
@@ -15,7 +16,7 @@ Este documento define el contrato de integracion que el frontend debe respetar c
 
 ## Sesion y tokens
 
-- `login` y `refresh` devuelven `accessToken` en el body.
+- `register`, `login` y `refresh` devuelven `accessToken` en el body.
 - El frontend envia access token en `Authorization: Bearer <token>`.
 - El refresh token vive en cookie HttpOnly `refresh_token` y rota en cada refresh.
 - El frontend nunca lee ni persiste el refresh token.

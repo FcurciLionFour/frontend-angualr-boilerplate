@@ -1,8 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UsersApi, UserDto } from '../users-api/users-api';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth.store';
+import { UserDto, UsersApi } from '../users-api/users-api';
 
 @Component({
   standalone: true,
@@ -12,15 +12,16 @@ import { AuthStore } from '../../../core/auth/auth.store';
   styleUrls: ['./users-list.css'],
 })
 export class UsersList {
-  private authStore = inject(AuthStore)
-  canCreate = computed(() =>
+  private readonly authStore = inject(AuthStore);
+
+  readonly canCreate = computed(() =>
     this.authStore.permissions().includes('users.write')
   );
-  users = signal<UserDto[]>([]);
-  loading = signal(true);
-  error = signal<string | null>(null);
+  readonly users = signal<UserDto[]>([]);
+  readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
-  constructor(private usersApi: UsersApi) {
+  constructor(private readonly usersApi: UsersApi) {
     this.load();
   }
 
@@ -29,7 +30,7 @@ export class UsersList {
     this.error.set(null);
 
     this.usersApi.findAll().subscribe({
-      next: users => {
+      next: (users) => {
         this.users.set(users);
         this.loading.set(false);
       },
@@ -39,16 +40,19 @@ export class UsersList {
       },
     });
   }
+
   confirmDelete(user: UserDto) {
     const confirmed = confirm(
-      `¿Seguro que querés desactivar al usuario ${user.email}?`
+      `Seguro que queres desactivar al usuario ${user.email}?`
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
-    this.usersApi.update(user.id, { isActive: false }).subscribe({
+    this.usersApi.remove(user.id).subscribe({
       next: () => {
-        this.load(); // recargar lista
+        this.load();
       },
       error: () => {
         alert('No se pudo eliminar el usuario');
@@ -56,5 +60,7 @@ export class UsersList {
     });
   }
 
-
+  isUserInactive(user: UserDto): boolean {
+    return user.isActive === false;
+  }
 }

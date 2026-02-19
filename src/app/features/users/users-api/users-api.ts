@@ -6,8 +6,8 @@ export interface UserDto {
   id: string;
   email: string;
   roles: string[];
-  permissions: string[];
-  isActive: boolean;
+  permissions?: string[];
+  isActive?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -55,6 +55,11 @@ export class UsersApi {
     );
   }
 
-
+  remove(id: string) {
+    return this.http.delete<{ success: true }>(
+      `${this.config.baseUrl}/users/${id}`,
+      { withCredentials: this.config.withCredentials }
+    );
+  }
 
 }

@@ -30,7 +30,7 @@ export function normalizeBackendError(error: HttpErrorResponse): BackendError {
   const retryAfterSeconds =
     typeof body.retryAfterSeconds === 'number' && body.retryAfterSeconds > 0
       ? Math.ceil(body.retryAfterSeconds)
-      : undefined;
+      : parseRetryAfterHeader(error);
 
   return {
     statusCode,
@@ -40,6 +40,26 @@ export function normalizeBackendError(error: HttpErrorResponse): BackendError {
     requestId:
       typeof body.requestId === 'string' ? body.requestId : undefined,
   };
+}
+
+function parseRetryAfterHeader(error: HttpErrorResponse): number | undefined {
+  const rawValue = error.headers?.get('Retry-After');
+  if (!rawValue || rawValue.trim().length === 0) {
+    return undefined;
+  }
+
+  const asSeconds = Number(rawValue);
+  if (Number.isFinite(asSeconds) && asSeconds > 0) {
+    return Math.ceil(asSeconds);
+  }
+
+  const asDate = Date.parse(rawValue);
+  if (Number.isNaN(asDate)) {
+    return undefined;
+  }
+
+  const seconds = Math.ceil((asDate - Date.now()) / 1000);
+  return seconds > 0 ? seconds : 1;
 }
 
 function pickCode(body: CandidateErrorBody): string | null {

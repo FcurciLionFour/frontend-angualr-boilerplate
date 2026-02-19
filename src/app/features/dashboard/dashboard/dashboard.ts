@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth.store';
-import { AuthApi } from '../../../core/auth/auth.api';
+import { SessionService } from '../../../core/auth/session.service';
 
 @Component({
   standalone: true,
@@ -14,21 +13,10 @@ import { AuthApi } from '../../../core/auth/auth.api';
 export class Dashboard {
   constructor(
     public authStore: AuthStore,
-    private authApi: AuthApi,
-    private router: Router
+    private readonly sessionService: SessionService
   ) {}
 
   logout() {
-    this.authApi.logout().subscribe({
-      next: () => {
-        this.authStore.clearSession();
-        this.router.navigate(['/auth/login']);
-      },
-      error: () => {
-        // incluso si falla el backend, limpiamos local
-        this.authStore.clearSession();
-        this.router.navigate(['/auth/login']);
-      },
-    });
+    this.sessionService.logout().subscribe();
   }
 }
