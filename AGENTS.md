@@ -1,67 +1,92 @@
 # AGENTS.md
 
-## Purpose
-This repository is a frontend boilerplate meant to be reused for freelance client projects.
-Primary goal: keep frontend-backend contract alignment strict and production-safe.
+## Objetivo
+Este repo es la base frontend para proyectos cliente.
+Prioridad absoluta: mantener alineacion estricta con el backend y no romper seguridad de sesion.
 
-## Mandatory Context Before Any Change
-Read these files first:
-- `docs/FRONTEND_BACKEND_ALIGNMENT.md`
-- `docs/AUTH_CONTRACT.md`
-- `docs/PROJECT_OVERVIEW.md`
+## Lectura obligatoria antes de tocar codigo
+Lee en este orden:
+1. `docs/FRONTEND_BACKEND_ALIGNMENT.md`
+2. `docs/AUTH_CONTRACT.md`
+3. `docs/AI_BOILERPLATE_CONTEXT.md`
+4. `docs/GO_LIVE_FRONT_CHECKLIST.md`
 
-If two docs conflict, treat `docs/FRONTEND_BACKEND_ALIGNMENT.md` as the source of truth and leave a note in your PR/changeset.
+Si hay conflicto entre documentos, manda `docs/FRONTEND_BACKEND_ALIGNMENT.md`.
 
-## Non-Negotiable Contract Rules
-- Always use backend base URL from environment via `API_CONFIG`.
-- Keep `withCredentials: true` for backend requests.
-- Keep CSRF double-submit behavior:
-  - cookie: `csrf_token`
-  - header: `x-csrf-token`
-- Access token must only be sent as `Authorization: Bearer <token>`.
-- Never persist refresh token in local storage/session storage.
-- Keep centralized 401 refresh flow and single retry behavior.
-- On refresh failure, clear local session and navigate to login.
-- Handle backend error code aliases: `code`, `errorCode`, `error_code`.
+## Reglas innegociables de contrato FE/BE
+- Base URL siempre desde `API_CONFIG` (`environment` por ambiente).
+- Requests al backend con `withCredentials: true`.
+- CSRF double submit: cookie `csrf_token` + header `x-csrf-token`.
+- Access token solo en `Authorization: Bearer <token>`.
+- Nunca persistir refresh token en local/session storage.
+- 401: refresh una sola vez y retry una sola vez.
+- Si refresh falla: limpiar sesion local y navegar a `/auth/login`.
+- Normalizar error codes por alias: `code`, `errorCode`, `error_code`.
 
-## Backend Error Handling Standards
-- Normalize backend errors through `src/app/core/http/backend-error.ts`.
-- Respect `retryAfterSeconds` for lockout/rate-limit UX.
-- Preserve `requestId` in logs when provided.
-- Prefer error-code based UX messages over status-only messages for 403.
+## Flujos obligatorios
+- Init app: `csrf -> refresh -> me`.
+- Login: `csrf -> login -> me`.
+- Register (si backend lo habilita): `csrf -> register -> me`.
+- Logout: `csrf -> logout`, esperar `204` sin body.
+- Endpoints auth publicos no deben disparar refresh loop.
 
-## Auth and Session Flow Standards
-- Session init must run at app bootstrap.
-- Login flow must be: CSRF init -> login -> me.
-- Logout must include CSRF and support 204/no-body responses.
-- Public auth endpoints must not trigger refresh loops.
+## Endpoints criticos a respetar
+- `GET /auth/csrf` -> 200 y cookie CSRF.
+- `POST /auth/login` -> accessToken.
+- `POST /auth/register` -> accessToken (si existe).
+- `POST /auth/refresh` -> accessToken, requiere CSRF + cookie refresh.
+- `POST /auth/logout` -> 204.
+- `GET /auth/me` -> requiere Bearer.
+- `GET /users`, `POST /users`, `PATCH /users/:id`, `DELETE /users/:id` -> RBAC estricto.
 
-## Routing and Security Standards
-- Protect private area with auth guard.
-- Protect feature actions with permission guard(s).
-- Keep self/admin restrictions explicit in route guards.
-- Do not expose UI actions the current user cannot execute.
+## Arquitectura obligatoria
+- No meter logica de negocio en layouts.
+- Core transversal en `src/app/core`.
+- Features por dominio en `src/app/features/<domain>`.
+- UI compartida en `src/app/shared`.
+- No duplicar llamadas backend fuera de `*.api.ts`.
 
-## Feature Development Standards
-- New domain goes under `src/app/features/<domain>/`.
-- Each feature must own:
-  - routes
-  - api service
-  - UI components
-- Avoid putting business logic in shared layouts.
-- Reuse `core/` only for truly cross-cutting concerns.
+## Seguridad y errores
+- No inyectar `Authorization` ni `x-csrf-token` fuera del backend propio.
+- 403 se maneja por `code` (permisos vs csrf vs sesion revocada).
+- 429 debe usar `retryAfterSeconds`; si falta, fallback a header `Retry-After`.
+- Loggear `requestId` si backend lo envia.
 
-## Testing and Quality Gates
-- For HTTP contract changes, update/add tests in:
-  - `src/app/core/http/*.spec.ts`
-  - `src/app/core/auth/*.spec.ts`
-- Keep strict typing; do not use `any` unless unavoidable and documented.
-- Before finishing: run lint/build/tests when requested or when behavior changed.
+## Antipatrones prohibidos
+- Llamar `AuthApi.logout()` directo desde componentes de feature.
+- Cambiar semantica de auth por ambiente (solo cambia `baseUrl` y config de despliegue).
+- Usar `any` en DTOs de contrato sin justificacion.
+- Agregar hacks locales que omitan guards/interceptors de seguridad.
+- Convertir deletes en patch soft-delete si el contrato backend define `DELETE`.
 
-## Boilerplate Reuse Rule
-When adapting this boilerplate for a new client:
-- Keep auth/session/security core untouched first.
-- Add client-specific modules as new features.
-- Change branding/theme/config, not security semantics.
-- Keep this file and `docs/AI_BOILERPLATE_CONTEXT.md` updated so future AI sessions start with complete context.
+## Workflow obligatorio para cambios
+1. Identificar impacto de contrato (endpoint, headers, estados, codigos de error).
+2. Implementar en este orden:
+   - servicio API
+   - session/interceptor/guard (si aplica)
+   - UI/feature
+   - tests
+   - docs
+3. Validar local:
+   - `npm run lint`
+   - `npm run build`
+   - `npm test -- --watch=false --browsers=ChromeHeadless`
+4. Validar contrato con backend:
+   - `npm run smoke:auth`
+   - checklist `docs/GO_LIVE_FRONT_CHECKLIST.md`
 
+## Definition of Done (DoD)
+Un cambio se considera terminado solo si:
+- Compila y pasa tests.
+- Respeta contrato FE/BE documentado.
+- No degrada seguridad de auth/csrf/refresh.
+- Actualiza docs si cambia comportamiento.
+- Mantiene compatibilidad para reutilizar el boilerplate en nuevo cliente.
+
+## Regla para nuevos proyectos cliente
+Al clonar este boilerplate:
+1. Mantener intacto `core/auth`, `core/http`, `core/security` en el arranque.
+2. Configurar `apiBaseUrl` por ambiente y revisar CORS/cookies del backend.
+3. Crear features nuevas por dominio de negocio, no en core.
+4. Correr smoke y checklist antes de arrancar desarrollo funcional.
+5. Actualizar este archivo y `docs/AI_BOILERPLATE_CONTEXT.md` con reglas del cliente.
